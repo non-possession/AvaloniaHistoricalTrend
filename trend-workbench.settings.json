@@ -1,0 +1,22 @@
+{
+  "LayoutMode": 1,
+  "ShowLegend": false,
+  "DefaultVisibleDurationMinutes": 5,
+  "DefaultVisibleDurationSeconds": 300,
+  "StorageProvider": "SQLite",
+  "SqliteDatabasePath": "trend-workbench.db",
+  "SamplingIntervalSeconds": 10,
+  "RealtimeWindowMinutes": 5,
+  "RealtimeWindowSeconds": 300,
+  "PersistAxisGroupAssignments": false,
+  "AxisGroupAssignments": [
+    1,
+    0,
+    0,
+    0,
+    1,
+    1,
+    1,
+    1
+  ]
+}

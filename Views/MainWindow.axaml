@@ -1,0 +1,1170 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:AvaloniaApplication2.ViewModels"
+        xmlns:ScottPlot="clr-namespace:ScottPlot.Avalonia;assembly=ScottPlot.Avalonia"
+        xmlns:shapes="clr-namespace:Avalonia.Controls.Shapes;assembly=Avalonia.Controls"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="560"
+        x:Class="AvaloniaApplication2.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Icon="/Assets/avalonia-logo.ico"
+        Title="AvaloniaApplication2 - Historical Trend Demo"
+        Width="1500"
+        Height="920"
+        MinWidth="1280"
+        MinHeight="820"
+        Background="#35575A"
+        FontFamily="PingFang SC,Hiragino Sans GB,Microsoft YaHei,Noto Sans CJK SC">
+
+    <Design.DataContext>
+        <!-- This only sets the DataContext for the previewer in an IDE,
+             to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
+        <vm:MainWindowViewModel/>
+    </Design.DataContext>
+
+    <Grid RowDefinitions="Auto,*" Margin="10">
+        <Grid ColumnDefinitions="*,Auto"
+              ColumnSpacing="12">
+            <Border Padding="10,6"
+                    Background="#DADADA"
+                    BorderBrush="#9B9B9B"
+                    BorderThickness="1"
+                    CornerRadius="4">
+                <StackPanel Spacing="2"
+                            HorizontalAlignment="Center">
+                    <TextBlock Text="TREND 开发工作台"
+                               FontSize="18"
+                               FontWeight="SemiBold"
+                               HorizontalAlignment="Center" />
+                    <TextBlock Text="{Binding Greeting}"
+                               HorizontalAlignment="Center"
+                               FontSize="12"
+                               Opacity="0.7" />
+                </StackPanel>
+            </Border>
+
+            <StackPanel Grid.Column="1"
+                        Width="164"
+                        Spacing="6">
+                <Border Background="#1FD400"
+                        Padding="8,5"
+                        PointerPressed="HistoricalTrend_Click">
+                    <TextBlock Text="历史曲线"
+                               FontSize="12"
+                               HorizontalAlignment="Center"
+                               FontWeight="Bold"
+                               Foreground="Black" />
+                </Border>
+                <Border Background="#FF2C14"
+                        Padding="8,5"
+                        PointerPressed="RealTrend_Click">
+                    <TextBlock Text="实时曲线"
+                               FontSize="12"
+                               HorizontalAlignment="Center"
+                               FontWeight="Bold"
+                               Foreground="Black" />
+                </Border>
+            </StackPanel>
+        </Grid>
+
+        <Grid Grid.Row="1"
+              Margin="0,10,0,0"
+              ColumnDefinitions="*,256"
+              ColumnSpacing="12">
+            <Border Background="#D2D2D2"
+                    BorderBrush="#9A9A9A"
+                    BorderThickness="1"
+                    Padding="10">
+                <Grid RowDefinitions="Auto,*,Auto"
+                      RowSpacing="6">
+                    <Grid ColumnDefinitions="Auto,*"
+                          ColumnSpacing="12">
+                        <StackPanel Spacing="2">
+                            <TextBlock Text="当前模式"
+                                       FontWeight="Bold" />
+                            <TextBlock x:Name="TrendModeTextBlock"
+                                       Text="{Binding TrendModeText}"
+                                       FontSize="12"
+                                       Opacity="0.75" />
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1"
+                                    HorizontalAlignment="Right"
+                                    Spacing="0">
+                            <StackPanel Orientation="Horizontal"
+                                        Spacing="6"
+                                        HorizontalAlignment="Right">
+                                <Button Content="单轴布局"
+                                        Click="SingleAxisLayout_Click"
+                                        Background="{Binding SingleAxisModeButton.BackgroundBrush}"
+                                        Foreground="{Binding SingleAxisModeButton.ForegroundBrush}"
+                                        FontWeight="{Binding SingleAxisModeButton.FontWeight}" />
+                                <Button Content="双轴布局"
+                                        Click="DualAxisLayout_Click"
+                                        Background="{Binding DualAxisModeButton.BackgroundBrush}"
+                                        Foreground="{Binding DualAxisModeButton.ForegroundBrush}"
+                                        FontWeight="{Binding DualAxisModeButton.FontWeight}" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Grid>
+
+                    <Grid Grid.Row="1"
+                          x:Name="TrendWorkbenchGrid"
+                          ColumnDefinitions="164,40,*,40,164"
+                          ColumnSpacing="6">
+                        <Border x:Name="LeftYAxisPanelBorder"
+                                Background="#DCDCDC"
+                                BorderBrush="#9C9C9C"
+                                BorderThickness="1">
+                            <ScrollViewer HorizontalScrollBarVisibility="Disabled"
+                                          VerticalScrollBarVisibility="Auto">
+                                <Grid Margin="8"
+                                      RowDefinitions="Auto,Auto,Auto,Auto"
+                                      RowSpacing="8">
+                                <TextBlock Text="Y1 轴面板"
+                                           FontSize="14"
+                                           FontWeight="Bold"
+                                           HorizontalAlignment="Center" />
+
+                                <StackPanel Grid.Row="1"
+                                            Spacing="6">
+                                    <TextBlock Text="参考变量"
+                                               FontSize="11"
+                                               Opacity="0.75" />
+                                    <ComboBox x:Name="YAxisSeriesSelector"
+                                              SelectedIndex="{Binding LeftAxisPanel.SelectedIndex, Mode=TwoWay}"
+                                              SelectionChanged="YAxisSeriesSelector_SelectionChanged">
+                                    </ComboBox>
+                                </StackPanel>
+
+                                <Border Grid.Row="2"
+                                        x:Name="YAxisRangeCardBorder"
+                                        Background="#ECECEC"
+                                        BorderBrush="#B1B1B1"
+                                        BorderThickness="1"
+                                        Padding="8"
+                                        PointerPressed="YAxisRangeCardBorder_PointerPressed">
+                                    <StackPanel Spacing="4">
+                                        <TextBlock Text="当前量程"
+                                                   FontSize="12"
+                                                   FontWeight="SemiBold" />
+                                        <TextBlock x:Name="LeftCurrentSeriesTextBlock"
+                                                   Text="{Binding LeftAxisPanel.CurrentSeriesText}"
+                                                   FontSize="11"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{Binding LeftAxisPanel.AccentBrush}" />
+                                        <TextBlock x:Name="YAxisRangeText"
+                                                   FontSize="12"
+                                                   Text="{Binding LeftAxisPanel.RangeText}"
+                                                   Foreground="{Binding LeftAxisPanel.AccentBrush}" />
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Grid.Row="3"
+                                        Background="#ECECEC"
+                                        BorderBrush="#B1B1B1"
+                                        BorderThickness="1"
+                                        Padding="8">
+                                    <StackPanel Spacing="6">
+                                        <TextBlock Text="自定义量程"
+                                                   FontSize="12"
+                                                   FontWeight="SemiBold" />
+                                        <Grid ColumnDefinitions="*,*"
+                                              ColumnSpacing="8">
+                                            <TextBox x:Name="YAxisMinTextBox"
+                                                     Text="{Binding LeftAxisPanel.MinRangeText, Mode=TwoWay}"
+                                                     Watermark="最小值" />
+                                            <TextBox Grid.Column="1"
+                                                     x:Name="YAxisMaxTextBox"
+                                                     Text="{Binding LeftAxisPanel.MaxRangeText, Mode=TwoWay}"
+                                                     Watermark="最大值" />
+                                        </Grid>
+                                        <Grid ColumnDefinitions="*,*"
+                                              ColumnSpacing="8">
+                                            <Button Content="应用"
+                                                    Click="ApplyCustomYAxisRange_Click" />
+                                            <Button Grid.Column="1"
+                                                    Content="复位"
+                                                    Click="ResetDefaultYAxisRange_Click" />
+                                        </Grid>
+                                    </StackPanel>
+                                </Border>
+                                </Grid>
+                            </ScrollViewer>
+                        </Border>
+
+                        <Border Grid.Column="1"
+                                Background="#D8D8D8"
+                                BorderBrush="#A8A8A8"
+                                BorderThickness="1"
+                                Padding="2,8"
+                                Margin="0,86,0,76"
+                                VerticalAlignment="Stretch">
+                            <Grid x:Name="YBrushTrackGrid"
+                                  MinHeight="260"
+                                  Width="28"
+                                  VerticalAlignment="Stretch"
+                                  Background="Transparent"
+                                  PointerPressed="YBrushTrackGrid_PointerPressed"
+                                  PointerEntered="YBrushTrackGrid_PointerEntered"
+                                  PointerMoved="YBrushTrackGrid_PointerMoved"
+                                  PointerExited="YBrushTrackGrid_PointerExited"
+                                  PointerReleased="YBrushTrackGrid_PointerReleased"
+                                  PointerCaptureLost="YBrushTrackGrid_PointerCaptureLost"
+                                  SizeChanged="YBrushTrackGrid_SizeChanged">
+                                <Border Width="20"
+                                        HorizontalAlignment="Center"
+                                        CornerRadius="10"
+                                        Background="#D8D8D8"
+                                        BorderBrush="#A8A8A8"
+                                        BorderThickness="1" />
+                                <Canvas x:Name="YBrushOverlayCanvas"
+                                        IsHitTestVisible="False">
+                                    <Border x:Name="YBrushTopShade"
+                                            Width="20"
+                                            Background="#7A8F8F8F" />
+                                    <Border x:Name="YBrushBottomShade"
+                                            Width="20"
+                                            Background="#7A8F8F8F" />
+                                    <shapes:Line x:Name="YUpperBrushLine"
+                                                 Stroke="#244CDA"
+                                                 StrokeThickness="3" />
+                                    <shapes:Line x:Name="YLowerBrushLine"
+                                                 Stroke="#244CDA"
+                                                 StrokeThickness="3" />
+                                </Canvas>
+                                <Slider x:Name="YLowerBrushSlider"
+                                        Height="240"
+                                        Width="20"
+                                        HorizontalAlignment="Left"
+                                        Margin="16,0,0,0"
+                                        Minimum="0"
+                                        Maximum="1"
+                                        Value="0"
+                                        Orientation="Vertical"
+                                        Background="Transparent"
+                                        IsVisible="False"
+                                        IsHitTestVisible="False"
+                                        ValueChanged="YLowerBrushSlider_ValueChanged" />
+                                <Slider x:Name="YUpperBrushSlider"
+                                        Height="240"
+                                        Width="20"
+                                        HorizontalAlignment="Right"
+                                        Margin="0,0,16,0"
+                                        Minimum="0"
+                                        Maximum="1"
+                                        Value="1"
+                                        Orientation="Vertical"
+                                        Background="Transparent"
+                                        IsVisible="False"
+                                        IsHitTestVisible="False"
+                                        ValueChanged="YUpperBrushSlider_ValueChanged" />
+                            </Grid>
+                        </Border>
+
+                        <Grid Grid.Column="2"
+                              RowDefinitions="*,Auto"
+                              RowSpacing="6"
+                              Margin="0,2,0,0">
+                            <Border
+                                    Background="#060606"
+                                    BorderBrush="#BEBEBE"
+                                    BorderThickness="2"
+                                    Padding="8"
+                                    MinHeight="420">
+                                <Grid>
+                                    <ScottPlot:AvaPlot x:Name="AvaPlot1" />
+                                    <Canvas x:Name="CrosshairCanvas"
+                                            Background="Transparent"
+                                            PointerMoved="PlotOverlay_PointerMoved"
+                                            PointerExited="PlotOverlay_PointerExited">
+                                        <shapes:Line x:Name="CrosshairVerticalLine"
+                                                     IsVisible="False"
+                                                     Stroke="#7A8891"
+                                                     StrokeThickness="1" />
+                                        <shapes:Line x:Name="CrosshairHorizontalLine"
+                                                     IsVisible="False"
+                                                     Stroke="#7A8891"
+                                                     StrokeThickness="1" />
+                                        <shapes:Line x:Name="YBrushGuideLine"
+                                        IsVisible="False"
+                                        Stroke="#FFB000"
+                                        StrokeThickness="2.5" />
+                                    </Canvas>
+                                </Grid>
+                            </Border>
+
+                            <Border Grid.Row="1"
+                                    Background="#D8D8D8"
+                                    BorderBrush="#A0A0A0"
+                                    BorderThickness="1"
+                                    Padding="6,4"
+                                    Margin="0,4,0,0">
+                                <Grid ColumnDefinitions="Auto,Auto,*,Auto,Auto"
+                                      ColumnSpacing="10">
+                                    <Button Content="◀"
+                                            Width="28"
+                                            Click="MoveLeftBoundaryToStart_Click" />
+                                    <TextBlock Grid.Column="1"
+                                               x:Name="LeftTimeText"
+                                               FontSize="12"
+                                               VerticalAlignment="Center"
+                                               Foreground="#2430C6"
+                                               FontWeight="SemiBold"
+                                               Text="{Binding LeftTimeText}" />
+                                    <Grid Grid.Column="2"
+                                          x:Name="XBrushTrackGrid"
+                                          Height="26"
+                                          Background="Transparent"
+                                          PointerPressed="XBrushTrackGrid_PointerPressed"
+                                          PointerMoved="XBrushTrackGrid_PointerMoved"
+                                          PointerEntered="XBrushTrackGrid_PointerEntered"
+                                          PointerExited="XBrushTrackGrid_PointerExited"
+                                          PointerReleased="XBrushTrackGrid_PointerReleased"
+                                          PointerCaptureLost="XBrushTrackGrid_PointerCaptureLost"
+                                          SizeChanged="XBrushTrackGrid_SizeChanged">
+                                        <Border Height="8"
+                                                VerticalAlignment="Center"
+                                                CornerRadius="4"
+                                                Background="#D8D8D8"
+                                                BorderBrush="#9F9F9F"
+                                                BorderThickness="1" />
+                                        <Canvas x:Name="XBrushOverlayCanvas"
+                                                IsHitTestVisible="False">
+                                            <shapes:Line x:Name="XLeftBrushLine"
+                                                         Stroke="#244CDA"
+                                                         StrokeThickness="3" />
+                                            <shapes:Line x:Name="XRightBrushLine"
+                                                         Stroke="#244CDA"
+                                                         StrokeThickness="3" />
+                                        </Canvas>
+                                        <Slider x:Name="LeftTimeSlider"
+                                                Minimum="0"
+                                                Maximum="1"
+                                                Value="0"
+                                                IsVisible="False"
+                                                IsHitTestVisible="False"
+                                                ValueChanged="LeftTimeSlider_ValueChanged" />
+                                        <Slider x:Name="RightTimeSlider"
+                                                Minimum="0"
+                                                Maximum="1"
+                                                Value="1"
+                                                IsVisible="False"
+                                                IsHitTestVisible="False"
+                                                ValueChanged="RightTimeSlider_ValueChanged" />
+                                    </Grid>
+                                    <TextBlock Grid.Column="3"
+                                               x:Name="RightTimeText"
+                                               FontSize="12"
+                                               VerticalAlignment="Center"
+                                               Foreground="#2430C6"
+                                               FontWeight="SemiBold"
+                                               Text="{Binding RightTimeText}" />
+                                    <Button Grid.Column="4"
+                                            Content="▶"
+                                            Width="28"
+                                            Click="MoveRightBoundaryToEnd_Click" />
+                                </Grid>
+                            </Border>
+                        </Grid>
+
+                        <Border Grid.Column="3"
+                                x:Name="RightYBrushHostBorder"
+                                Background="#D8D8D8"
+                                BorderBrush="#A8A8A8"
+                                BorderThickness="1"
+                                Padding="2,8"
+                                Margin="0,86,0,76"
+                                VerticalAlignment="Stretch"
+                                IsVisible="{Binding IsDualAxisMode}">
+                            <Grid x:Name="RightYBrushTrackGrid"
+                                  MinHeight="260"
+                                  Width="28"
+                                  VerticalAlignment="Stretch"
+                                  Background="Transparent"
+                                  PointerPressed="RightYBrushTrackGrid_PointerPressed"
+                                  PointerEntered="RightYBrushTrackGrid_PointerEntered"
+                                  PointerMoved="RightYBrushTrackGrid_PointerMoved"
+                                  PointerExited="RightYBrushTrackGrid_PointerExited"
+                                  PointerReleased="RightYBrushTrackGrid_PointerReleased"
+                                  PointerCaptureLost="RightYBrushTrackGrid_PointerCaptureLost"
+                                  SizeChanged="RightYBrushTrackGrid_SizeChanged">
+                                <Border Width="20"
+                                        HorizontalAlignment="Center"
+                                        CornerRadius="10"
+                                        Background="#D8D8D8"
+                                        BorderBrush="#A8A8A8"
+                                        BorderThickness="1" />
+                                <Canvas x:Name="RightYBrushOverlayCanvas"
+                                        IsHitTestVisible="False">
+                                    <Border x:Name="RightYBrushTopShade"
+                                            Width="20"
+                                            Background="#7A8F8F8F" />
+                                    <Border x:Name="RightYBrushBottomShade"
+                                            Width="20"
+                                            Background="#7A8F8F8F" />
+                                    <shapes:Line x:Name="RightYUpperBrushLine"
+                                                 Stroke="#FFA500"
+                                                 StrokeThickness="3" />
+                                    <shapes:Line x:Name="RightYLowerBrushLine"
+                                                 Stroke="#FFA500"
+                                                 StrokeThickness="3" />
+                                </Canvas>
+                            </Grid>
+                        </Border>
+
+                        <Border Grid.Column="4"
+                                x:Name="RightYAxisPanelBorder"
+                                Background="#DCDCDC"
+                                BorderBrush="#9C9C9C"
+                                BorderThickness="1"
+                                IsVisible="{Binding IsDualAxisMode}">
+                            <ScrollViewer HorizontalScrollBarVisibility="Disabled"
+                                          VerticalScrollBarVisibility="Auto">
+                                <Grid Margin="8"
+                                      RowDefinitions="Auto,Auto,Auto,Auto"
+                                      RowSpacing="8">
+                                    <TextBlock Text="Y2 轴面板"
+                                               FontSize="14"
+                                               FontWeight="Bold"
+                                               HorizontalAlignment="Center" />
+
+                                    <StackPanel Grid.Row="1"
+                                                Spacing="6">
+                                        <TextBlock Text="参考变量"
+                                                   FontSize="11"
+                                                   Opacity="0.75" />
+                                            <ComboBox x:Name="RightYAxisSeriesSelector"
+                                                  SelectedIndex="{Binding RightAxisPanel.SelectedIndex, Mode=TwoWay}"
+                                                  SelectionChanged="RightYAxisSeriesSelector_SelectionChanged">
+                                            </ComboBox>
+                                    </StackPanel>
+
+                                    <Border Grid.Row="2"
+                                            x:Name="RightYAxisRangeCardBorder"
+                                            Background="#ECECEC"
+                                            BorderBrush="#B1B1B1"
+                                            BorderThickness="1"
+                                            Padding="8"
+                                            PointerPressed="RightYAxisRangeCardBorder_PointerPressed">
+                                        <StackPanel Spacing="4">
+                                            <TextBlock Text="当前量程"
+                                                       FontSize="12"
+                                                       FontWeight="SemiBold" />
+                                            <TextBlock x:Name="RightCurrentSeriesTextBlock"
+                                                       Text="{Binding RightAxisPanel.CurrentSeriesText}"
+                                                       FontSize="11"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="{Binding RightAxisPanel.AccentBrush}" />
+                                            <TextBlock x:Name="RightYAxisRangeText"
+                                                       FontSize="12"
+                                                       Text="{Binding RightAxisPanel.RangeText}"
+                                                       Foreground="{Binding RightAxisPanel.AccentBrush}" />
+                                        </StackPanel>
+                                    </Border>
+
+                                    <Border Grid.Row="3"
+                                            Background="#ECECEC"
+                                            BorderBrush="#B1B1B1"
+                                            BorderThickness="1"
+                                            Padding="8">
+                                        <StackPanel Spacing="6">
+                                            <TextBlock Text="自定义量程"
+                                                       FontSize="12"
+                                                       FontWeight="SemiBold" />
+                                            <Grid ColumnDefinitions="*,*"
+                                                  ColumnSpacing="8">
+                                                <TextBox x:Name="RightYAxisMinTextBox"
+                                                         Text="{Binding RightAxisPanel.MinRangeText, Mode=TwoWay}"
+                                                         Watermark="最小值" />
+                                                <TextBox Grid.Column="1"
+                                                         x:Name="RightYAxisMaxTextBox"
+                                                         Text="{Binding RightAxisPanel.MaxRangeText, Mode=TwoWay}"
+                                                         Watermark="最大值" />
+                                            </Grid>
+                                            <Grid ColumnDefinitions="*,*"
+                                                  ColumnSpacing="8">
+                                                <Button Content="应用"
+                                                        Click="ApplyCustomRightYAxisRange_Click" />
+                                                <Button Grid.Column="1"
+                                                        Content="复位"
+                                                        Click="ResetDefaultRightYAxisRange_Click" />
+                                            </Grid>
+                                        </StackPanel>
+                                    </Border>
+                                </Grid>
+                            </ScrollViewer>
+                        </Border>
+                    </Grid>
+
+                    <Border Grid.Row="2"
+                            Background="#DCDCDC"
+                            BorderBrush="#9E9E9E"
+                            BorderThickness="1"
+                            Padding="6">
+                        <StackPanel Spacing="6">
+                            <TextBlock Text="底部控制区"
+                                       FontSize="12"
+                                       FontWeight="Bold" />
+                            <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,*,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
+                                  ColumnSpacing="6">
+                                <Button Content="|&lt;"
+                                        Click="JumpToLeftmost_Click" />
+                                <Button Grid.Column="1"
+                                        Content="&lt;&lt;"
+                                        Click="PanLeftDouble_Click" />
+                                <Button Grid.Column="2"
+                                        Content="&lt;"
+                                        Click="PanLeft_Click" />
+                                <Button Grid.Column="3"
+                                        Content="缩小"
+                                        Click="ZoomTimeIn_Click" />
+                                <Border Grid.Column="4"
+                                        Background="#CFCFCF"
+                                        BorderBrush="#9F9F9F"
+                                        BorderThickness="1"
+                                        Padding="8,4">
+                                    <TextBlock x:Name="SelectedDurationText"
+                                               HorizontalAlignment="Center"
+                                               FontSize="12"
+                                               FontWeight="SemiBold"
+                                               Text="{Binding SelectedDurationText}" />
+                                </Border>
+                                <Button Grid.Column="5"
+                                        Content="放大"
+                                        Click="ZoomTimeOut_Click" />
+                                <Button Grid.Column="6"
+                                        Content="&gt;"
+                                        Click="PanRight_Click" />
+                                <Button Grid.Column="7"
+                                        Content="&gt;&gt;"
+                                        Click="PanRightDouble_Click" />
+                                <Button Grid.Column="8"
+                                        Content="Now"
+                                        Click="JumpToCurrent_Click" />
+                                <Button Grid.Column="9"
+                                        Content="导出CSV"
+                                        Click="ExportCsv_Click" />
+                                <Button Grid.Column="10"
+                                        Content="保存图片"
+                                        Click="SavePlotImage_Click" />
+                                <Button Grid.Column="11"
+                                        Content="打印"
+                                        Click="PrintPlot_Click" />
+                            </Grid>
+
+                            <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto"
+                                  ColumnSpacing="6">
+                                <TextBlock Text="数据库"
+                                           VerticalAlignment="Center"
+                                           FontSize="11"
+                                           FontWeight="SemiBold" />
+                                <TextBox Grid.Column="1"
+                                         x:Name="DatabasePathTextBox"
+                                         Text="{Binding DatabasePathText, Mode=TwoWay}"
+                                         Watermark="SQLite 数据库路径" />
+                                <Button Grid.Column="2"
+                                        Content="加载/切换数据库"
+                                        Click="LoadDatabase_Click" />
+                                <TextBlock Grid.Column="3"
+                                           Text="采集秒"
+                                           VerticalAlignment="Center"
+                                           FontSize="11"
+                                           FontWeight="SemiBold" />
+                                <TextBox Grid.Column="4"
+                                         x:Name="SamplingIntervalTextBox"
+                                         Width="48"
+                                         Text="{Binding SamplingIntervalText, Mode=TwoWay}"
+                                         Watermark="秒" />
+                                <StackPanel Grid.Column="5"
+                                            Orientation="Horizontal"
+                                            Spacing="4">
+                                    <Button Content="应用频率"
+                                            Click="ApplySamplingInterval_Click" />
+                                </StackPanel>
+                            </Grid>
+
+                            <Border Background="#FFF4C2"
+                                    BorderBrush="#C89B24"
+                                    BorderThickness="1"
+                                    Padding="8,4"
+                                    MinHeight="28">
+                                <TextBlock x:Name="ExportStatusTextBlock"
+                                           FontSize="11"
+                                           Foreground="#111111"
+                                           FontWeight="SemiBold"
+                                           TextWrapping="Wrap"
+                                           Text="{Binding ExportStatusText}" />
+                            </Border>
+
+                            <WrapPanel ItemWidth="68"
+                                       ItemHeight="30"
+                                       HorizontalAlignment="Center">
+                                <Button x:Name="Duration1DayButton" Content="1 Day" Click="Duration1Day_Click" Background="{Binding Duration1Day.BackgroundBrush}" Foreground="{Binding Duration1Day.ForegroundBrush}" FontWeight="{Binding Duration1Day.FontWeight}" />
+                                <Button x:Name="Duration12HoursButton" Content="12 H" Click="Duration12Hours_Click" Background="{Binding Duration12Hours.BackgroundBrush}" Foreground="{Binding Duration12Hours.ForegroundBrush}" FontWeight="{Binding Duration12Hours.FontWeight}" />
+                                <Button x:Name="Duration6HoursButton" Content="6 H" Click="Duration6Hours_Click" Background="{Binding Duration6Hours.BackgroundBrush}" Foreground="{Binding Duration6Hours.ForegroundBrush}" FontWeight="{Binding Duration6Hours.FontWeight}" />
+                                <Button x:Name="Duration3HoursButton" Content="3 H" Click="Duration3Hours_Click" Background="{Binding Duration3Hours.BackgroundBrush}" Foreground="{Binding Duration3Hours.ForegroundBrush}" FontWeight="{Binding Duration3Hours.FontWeight}" />
+                                <Button x:Name="Duration2HoursButton" Content="2 H" Click="Duration2Hours_Click" Background="{Binding Duration2Hours.BackgroundBrush}" Foreground="{Binding Duration2Hours.ForegroundBrush}" FontWeight="{Binding Duration2Hours.FontWeight}" />
+                                <Button x:Name="Duration1HourButton" Content="1 H" Click="Duration1Hour_Click" Background="{Binding Duration1Hour.BackgroundBrush}" Foreground="{Binding Duration1Hour.ForegroundBrush}" FontWeight="{Binding Duration1Hour.FontWeight}" />
+                                <Button x:Name="Duration30MinutesButton" Content="30 Min" Click="Duration30Minutes_Click" Background="{Binding Duration30Minutes.BackgroundBrush}" Foreground="{Binding Duration30Minutes.ForegroundBrush}" FontWeight="{Binding Duration30Minutes.FontWeight}" />
+                                <Button x:Name="Duration10MinutesButton" Content="10 Min" Click="Duration10Minutes_Click" Background="{Binding Duration10Minutes.BackgroundBrush}" Foreground="{Binding Duration10Minutes.ForegroundBrush}" FontWeight="{Binding Duration10Minutes.FontWeight}" />
+                                <Button x:Name="Duration5MinutesButton" Content="5 Min" Click="Duration5Minutes_Click" Background="{Binding Duration5Minutes.BackgroundBrush}" Foreground="{Binding Duration5Minutes.ForegroundBrush}" FontWeight="{Binding Duration5Minutes.FontWeight}" />
+                                <Button x:Name="Duration2MinutesButton" Content="2 Min" Click="Duration2Minutes_Click" Background="{Binding Duration2Minutes.BackgroundBrush}" Foreground="{Binding Duration2Minutes.ForegroundBrush}" FontWeight="{Binding Duration2Minutes.FontWeight}" />
+                                <Button x:Name="Duration1MinuteButton" Content="1 Min" Click="Duration1Minute_Click" Background="{Binding Duration1Minute.BackgroundBrush}" Foreground="{Binding Duration1Minute.ForegroundBrush}" FontWeight="{Binding Duration1Minute.FontWeight}" />
+                                <Button x:Name="Duration30SecondsButton" Content="30 S" Click="Duration30Seconds_Click" Background="{Binding Duration30Seconds.BackgroundBrush}" Foreground="{Binding Duration30Seconds.ForegroundBrush}" FontWeight="{Binding Duration30Seconds.FontWeight}" />
+                                <Button x:Name="Duration10SecondsButton" Content="10 S" Click="Duration10Seconds_Click" Background="{Binding Duration10Seconds.BackgroundBrush}" Foreground="{Binding Duration10Seconds.ForegroundBrush}" FontWeight="{Binding Duration10Seconds.FontWeight}" />
+                            </WrapPanel>
+
+                            <Grid ColumnDefinitions="Auto,*,Auto,Auto"
+                                  ColumnSpacing="8">
+                                <Button x:Name="BottomLeftRangeButton"
+                                        Background="#CFCFCF"
+                                        BorderBrush="#8F8F8F"
+                                        BorderThickness="1"
+                                        Padding="12,6"
+                                        MinWidth="150"
+                                        ToolTip.Tip="点击这里可以弹出起始时间编辑面板。"
+                                        Click="StartTimeEntry_Click">
+                                    <StackPanel Spacing="2">
+                                        <TextBlock Text="起始时间（点击修改）"
+                                                   FontSize="10"
+                                                   Foreground="#333333"
+                                                   HorizontalAlignment="Center" />
+                                        <TextBlock x:Name="BottomLeftRangeText"
+                                                   FontSize="13"
+                                                   Foreground="#2430C6"
+                                                   FontWeight="SemiBold"
+                                                   HorizontalAlignment="Center"
+                                                   Text="{Binding BottomLeftRangeText}" />
+                                    </StackPanel>
+                                </Button>
+                                <Button Grid.Column="2"
+                                        x:Name="BottomRightRangeButton"
+                                        Background="#CFCFCF"
+                                        BorderBrush="#8F8F8F"
+                                        BorderThickness="1"
+                                        Padding="12,6"
+                                        MinWidth="150"
+                                        ToolTip.Tip="点击这里可以弹出结束时间编辑面板。"
+                                        Click="EndTimeEntry_Click">
+                                    <StackPanel Spacing="2">
+                                        <TextBlock Text="结束时间（点击修改）"
+                                                   FontSize="10"
+                                                   Foreground="#333333"
+                                                   HorizontalAlignment="Center" />
+                                        <TextBlock x:Name="BottomRightRangeText"
+                                                   FontSize="13"
+                                                   Foreground="#2430C6"
+                                                   FontWeight="SemiBold"
+                                                   HorizontalAlignment="Center"
+                                                   Text="{Binding BottomRightRangeText}" />
+                                    </StackPanel>
+                                </Button>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <Popup x:Name="TimeEditorPopup"
+                   PlacementTarget="{Binding #BottomLeftRangeButton}"
+                   Placement="Top">
+                <Border Background="#E7E7E7"
+                        BorderBrush="#707070"
+                        BorderThickness="1"
+                        CornerRadius="2"
+                        Padding="10"
+                        Width="306">
+                    <StackPanel Spacing="8">
+                        <TextBlock x:Name="TimeEditorTitleTextBlock"
+                                   Text="编辑时间"
+                                   FontSize="13"
+                                   FontWeight="SemiBold" />
+                        <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto"
+                              ColumnDefinitions="24,*,44"
+                              RowSpacing="3"
+                              ColumnSpacing="6">
+                            <TextBlock Text="年" VerticalAlignment="Center" />
+                            <Slider Grid.Column="1" x:Name="TimeYearSlider" Height="18" Foreground="#58656A" Background="#C4C7C8" Minimum="2020" Maximum="2035" TickFrequency="1" IsSnapToTickEnabled="True" ValueChanged="TimeEditorSlider_ValueChanged" />
+                            <TextBox Grid.Column="2" x:Name="TimeYearTextBox" Height="24" FontSize="11" Padding="4,1" Background="#F7F7F7" BorderBrush="#777777" LostFocus="TimeEditorTextBox_LostFocus" />
+
+                            <TextBlock Grid.Row="1" Text="月" VerticalAlignment="Center" />
+                            <Slider Grid.Row="1" Grid.Column="1" x:Name="TimeMonthSlider" Height="18" Foreground="#58656A" Background="#C4C7C8" Minimum="1" Maximum="12" TickFrequency="1" IsSnapToTickEnabled="True" ValueChanged="TimeEditorSlider_ValueChanged" />
+                            <TextBox Grid.Row="1" Grid.Column="2" x:Name="TimeMonthTextBox" Height="24" FontSize="11" Padding="4,1" Background="#F7F7F7" BorderBrush="#777777" LostFocus="TimeEditorTextBox_LostFocus" />
+
+                            <TextBlock Grid.Row="2" Text="日" VerticalAlignment="Center" />
+                            <Slider Grid.Row="2" Grid.Column="1" x:Name="TimeDaySlider" Height="18" Foreground="#58656A" Background="#C4C7C8" Minimum="1" Maximum="31" TickFrequency="1" IsSnapToTickEnabled="True" ValueChanged="TimeEditorSlider_ValueChanged" />
+                            <TextBox Grid.Row="2" Grid.Column="2" x:Name="TimeDayTextBox" Height="24" FontSize="11" Padding="4,1" Background="#F7F7F7" BorderBrush="#777777" LostFocus="TimeEditorTextBox_LostFocus" />
+
+                            <TextBlock Grid.Row="3" Text="时" VerticalAlignment="Center" />
+                            <Slider Grid.Row="3" Grid.Column="1" x:Name="TimeHourSlider" Height="18" Foreground="#58656A" Background="#C4C7C8" Minimum="0" Maximum="23" TickFrequency="1" IsSnapToTickEnabled="True" ValueChanged="TimeEditorSlider_ValueChanged" />
+                            <TextBox Grid.Row="3" Grid.Column="2" x:Name="TimeHourTextBox" Height="24" FontSize="11" Padding="4,1" Background="#F7F7F7" BorderBrush="#777777" LostFocus="TimeEditorTextBox_LostFocus" />
+
+                            <TextBlock Grid.Row="4" Text="分" VerticalAlignment="Center" />
+                            <Slider Grid.Row="4" Grid.Column="1" x:Name="TimeMinuteSlider" Height="18" Foreground="#58656A" Background="#C4C7C8" Minimum="0" Maximum="59" TickFrequency="1" IsSnapToTickEnabled="True" ValueChanged="TimeEditorSlider_ValueChanged" />
+                            <TextBox Grid.Row="4" Grid.Column="2" x:Name="TimeMinuteTextBox" Height="24" FontSize="11" Padding="4,1" Background="#F7F7F7" BorderBrush="#777777" LostFocus="TimeEditorTextBox_LostFocus" />
+
+                            <TextBlock Grid.Row="5" Text="秒" VerticalAlignment="Center" />
+                            <Slider Grid.Row="5" Grid.Column="1" x:Name="TimeSecondSlider" Height="18" Foreground="#58656A" Background="#C4C7C8" Minimum="0" Maximum="59" TickFrequency="1" IsSnapToTickEnabled="True" ValueChanged="TimeEditorSlider_ValueChanged" />
+                            <TextBox Grid.Row="5" Grid.Column="2" x:Name="TimeSecondTextBox" Height="24" FontSize="11" Padding="4,1" Background="#F7F7F7" BorderBrush="#777777" LostFocus="TimeEditorTextBox_LostFocus" />
+                        </Grid>
+                        <Grid ColumnDefinitions="*,Auto,Auto"
+                              ColumnSpacing="8">
+                            <TextBlock x:Name="TimeEditorPreviewTextBlock"
+                                       VerticalAlignment="Center"
+                                       Foreground="#2430C6"
+                                       FontSize="12"
+                                       FontWeight="SemiBold" />
+                            <Button Grid.Column="1"
+                                    Content="取消"
+                                    Click="CancelTimeEditor_Click" />
+                            <Button Grid.Column="2"
+                                    Content="应用"
+                                    Click="ApplyTimeEditor_Click" />
+                        </Grid>
+                    </StackPanel>
+                </Border>
+            </Popup>
+
+            <Border Grid.Column="1"
+                    Background="#D2D2D2"
+                    BorderBrush="#9A9A9A"
+                    BorderThickness="1"
+                    Padding="0">
+                <ScrollViewer HorizontalScrollBarVisibility="Disabled"
+                              VerticalScrollBarVisibility="Auto">
+                <StackPanel Spacing="8"
+                            Margin="10">
+                    <TextBlock Text="变量区"
+                               FontSize="16"
+                               FontWeight="SemiBold"
+                               HorizontalAlignment="Center" />
+                    <TextBlock Text="变量名可编辑，当前值会按十字光标时刻或当前时间窗口右端位置刷新。"
+                               FontSize="12"
+                               TextWrapping="Wrap"
+                               Opacity="0.75" />
+                    <Separator />
+                    <Border x:Name="Series1CardBorder"
+                            Background="{Binding Series1.BackgroundBrush}"
+                            BorderBrush="{Binding Series1.BorderBrush}"
+                            BorderThickness="{Binding Series1.BorderThickness}"
+                            Opacity="{Binding Series1.Opacity}"
+                            Padding="8"
+                            PointerPressed="VariableCard_PointerPressed">
+                        <Grid RowDefinitions="Auto,Auto,Auto"
+                              RowSpacing="6">
+                            <Grid ColumnDefinitions="Auto,*,Auto,Auto"
+                                  ColumnSpacing="8">
+                                <Border Width="14"
+                                        Height="14"
+                                        CornerRadius="7"
+                                        Background="CornflowerBlue"
+                                        VerticalAlignment="Center" />
+                                <TextBox Grid.Column="1"
+                                         x:Name="Series1NameTextBox"
+                                         Text="{Binding Series1.Name, Mode=TwoWay}"
+                                         FontSize="12"
+                                         FontWeight="Bold"
+                                         LostFocus="VariableNameEditor_LostFocus" />
+                                <CheckBox Grid.Column="2"
+                                          x:Name="Series1CheckBox"
+                                          Content="显示"
+                                          IsChecked="{Binding Series1.IsVisible, Mode=TwoWay}"
+                                          Checked="SeriesVisibilityChanged"
+                                          Unchecked="SeriesVisibilityChanged" />
+                                <ComboBox Grid.Column="3"
+                                          x:Name="Series1AxisGroupComboBox"
+                                          Width="70"
+                                          SelectionChanged="AxisGroupComboBox_SelectionChanged" />
+                            </Grid>
+                            <Border Grid.Row="1"
+                                    Height="3"
+                                    Background="CornflowerBlue"
+                                    Margin="2,2,2,0" />
+                            <Grid Grid.Row="2"
+                                  ColumnDefinitions="*,Auto">
+                                <TextBlock Text="当前值"
+                                           FontSize="12"
+                                           Opacity="0.7" />
+                                <TextBlock Grid.Column="1"
+                                           x:Name="Series1ValueTextBlock"
+                                           Text="{Binding Series1.ValueText}"
+                                           FontSize="12"
+                                           Foreground="#1C2BE0"
+                                           FontWeight="SemiBold" />
+                            </Grid>
+                        </Grid>
+                    </Border>
+
+                    <Border x:Name="Series2CardBorder"
+                            Background="{Binding Series2.BackgroundBrush}"
+                            BorderBrush="{Binding Series2.BorderBrush}"
+                            BorderThickness="{Binding Series2.BorderThickness}"
+                            Opacity="{Binding Series2.Opacity}"
+                            Padding="8"
+                            PointerPressed="VariableCard_PointerPressed">
+                        <Grid RowDefinitions="Auto,Auto,Auto"
+                              RowSpacing="6">
+                            <Grid ColumnDefinitions="Auto,*,Auto,Auto"
+                                  ColumnSpacing="8">
+                                <Border Width="14"
+                                        Height="14"
+                                        CornerRadius="7"
+                                        Background="Orange"
+                                        VerticalAlignment="Center" />
+                                <TextBox Grid.Column="1"
+                                         x:Name="Series2NameTextBox"
+                                         Text="{Binding Series2.Name, Mode=TwoWay}"
+                                         FontSize="12"
+                                         FontWeight="Bold"
+                                         LostFocus="VariableNameEditor_LostFocus" />
+                                <CheckBox Grid.Column="2"
+                                          x:Name="Series2CheckBox"
+                                          Content="显示"
+                                          IsChecked="{Binding Series2.IsVisible, Mode=TwoWay}"
+                                          Checked="SeriesVisibilityChanged"
+                                          Unchecked="SeriesVisibilityChanged" />
+                                <ComboBox Grid.Column="3"
+                                          x:Name="Series2AxisGroupComboBox"
+                                          Width="70"
+                                          SelectionChanged="AxisGroupComboBox_SelectionChanged" />
+                            </Grid>
+                            <Border Grid.Row="1"
+                                    Height="3"
+                                    Background="Orange"
+                                    Margin="2,2,2,0" />
+                            <Grid Grid.Row="2"
+                                  ColumnDefinitions="*,Auto">
+                                <TextBlock Text="当前值"
+                                           FontSize="12"
+                                           Opacity="0.7" />
+                                <TextBlock Grid.Column="1"
+                                           x:Name="Series2ValueTextBlock"
+                                           Text="{Binding Series2.ValueText}"
+                                           FontSize="12"
+                                           Foreground="#1C2BE0"
+                                           FontWeight="SemiBold" />
+                            </Grid>
+                        </Grid>
+                    </Border>
+
+                    <Border x:Name="Series3CardBorder"
+                            Background="{Binding Series3.BackgroundBrush}"
+                            BorderBrush="{Binding Series3.BorderBrush}"
+                            BorderThickness="{Binding Series3.BorderThickness}"
+                            Opacity="{Binding Series3.Opacity}"
+                            Padding="8"
+                            PointerPressed="VariableCard_PointerPressed">
+                        <Grid RowDefinitions="Auto,Auto,Auto"
+                              RowSpacing="6">
+                            <Grid ColumnDefinitions="Auto,*,Auto,Auto"
+                                  ColumnSpacing="8">
+                                <Border Width="14"
+                                        Height="14"
+                                        CornerRadius="7"
+                                        Background="MediumSeaGreen"
+                                        VerticalAlignment="Center" />
+                                <TextBox Grid.Column="1"
+                                         x:Name="Series3NameTextBox"
+                                         Text="{Binding Series3.Name, Mode=TwoWay}"
+                                         FontSize="12"
+                                         FontWeight="Bold"
+                                         LostFocus="VariableNameEditor_LostFocus" />
+                                <CheckBox Grid.Column="2"
+                                          x:Name="Series3CheckBox"
+                                          Content="显示"
+                                          IsChecked="{Binding Series3.IsVisible, Mode=TwoWay}"
+                                          Checked="SeriesVisibilityChanged"
+                                          Unchecked="SeriesVisibilityChanged" />
+                                <ComboBox Grid.Column="3"
+                                          x:Name="Series3AxisGroupComboBox"
+                                          Width="70"
+                                          SelectionChanged="AxisGroupComboBox_SelectionChanged" />
+                            </Grid>
+                            <Border Grid.Row="1"
+                                    Height="3"
+                                    Background="MediumSeaGreen"
+                                    Margin="2,2,2,0" />
+                            <Grid Grid.Row="2"
+                                  ColumnDefinitions="*,Auto">
+                                <TextBlock Text="当前值"
+                                           FontSize="12"
+                                           Opacity="0.7" />
+                                <TextBlock Grid.Column="1"
+                                           x:Name="Series3ValueTextBlock"
+                                           Text="{Binding Series3.ValueText}"
+                                           FontSize="12"
+                                           Foreground="#1C2BE0"
+                                           FontWeight="SemiBold" />
+                            </Grid>
+                        </Grid>
+                    </Border>
+
+                    <Border x:Name="Series4CardBorder"
+                            Background="{Binding Series4.BackgroundBrush}"
+                            BorderBrush="{Binding Series4.BorderBrush}"
+                            BorderThickness="{Binding Series4.BorderThickness}"
+                            Opacity="{Binding Series4.Opacity}"
+                            Padding="8"
+                            PointerPressed="VariableCard_PointerPressed">
+                        <Grid RowDefinitions="Auto,Auto,Auto"
+                              RowSpacing="6">
+                            <Grid ColumnDefinitions="Auto,*,Auto,Auto"
+                                  ColumnSpacing="8">
+                                <Border Width="14"
+                                        Height="14"
+                                        CornerRadius="7"
+                                        Background="MediumVioletRed"
+                                        VerticalAlignment="Center" />
+                                <TextBox Grid.Column="1"
+                                         x:Name="Series4NameTextBox"
+                                         Text="{Binding Series4.Name, Mode=TwoWay}"
+                                         FontSize="12"
+                                         FontWeight="Bold"
+                                         LostFocus="VariableNameEditor_LostFocus" />
+                                <CheckBox Grid.Column="2"
+                                          x:Name="Series4CheckBox"
+                                          Content="显示"
+                                          IsChecked="{Binding Series4.IsVisible, Mode=TwoWay}"
+                                          Checked="SeriesVisibilityChanged"
+                                          Unchecked="SeriesVisibilityChanged" />
+                                <ComboBox Grid.Column="3"
+                                          x:Name="Series4AxisGroupComboBox"
+                                          Width="70"
+                                          SelectionChanged="AxisGroupComboBox_SelectionChanged" />
+                            </Grid>
+                            <Border Grid.Row="1"
+                                    Height="3"
+                                    Background="MediumVioletRed"
+                                    Margin="2,2,2,0" />
+                            <Grid Grid.Row="2"
+                                  ColumnDefinitions="*,Auto">
+                                <TextBlock Text="当前值"
+                                           FontSize="12"
+                                           Opacity="0.7" />
+                                <TextBlock Grid.Column="1"
+                                           x:Name="Series4ValueTextBlock"
+                                           Text="{Binding Series4.ValueText}"
+                                           FontSize="12"
+                                           Foreground="#1C2BE0"
+                                           FontWeight="SemiBold" />
+                            </Grid>
+                        </Grid>
+                    </Border>
+
+                    <Border x:Name="Series5CardBorder"
+                            Background="{Binding Series5.BackgroundBrush}"
+                            BorderBrush="{Binding Series5.BorderBrush}"
+                            BorderThickness="{Binding Series5.BorderThickness}"
+                            Opacity="{Binding Series5.Opacity}"
+                            Padding="8"
+                            PointerPressed="VariableCard_PointerPressed">
+                        <Grid RowDefinitions="Auto,Auto,Auto"
+                              RowSpacing="6">
+                            <Grid ColumnDefinitions="Auto,*,Auto,Auto"
+                                  ColumnSpacing="8">
+                                <Border Width="14"
+                                        Height="14"
+                                        CornerRadius="7"
+                                        Background="Gold"
+                                        VerticalAlignment="Center" />
+                                <TextBox Grid.Column="1"
+                                         x:Name="Series5NameTextBox"
+                                         Text="{Binding Series5.Name, Mode=TwoWay}"
+                                         FontSize="12"
+                                         FontWeight="Bold"
+                                         LostFocus="VariableNameEditor_LostFocus" />
+                                <CheckBox Grid.Column="2"
+                                          x:Name="Series5CheckBox"
+                                          Content="显示"
+                                          IsChecked="{Binding Series5.IsVisible, Mode=TwoWay}"
+                                          Checked="SeriesVisibilityChanged"
+                                          Unchecked="SeriesVisibilityChanged" />
+                                <ComboBox Grid.Column="3"
+                                          x:Name="Series5AxisGroupComboBox"
+                                          Width="70"
+                                          SelectionChanged="AxisGroupComboBox_SelectionChanged" />
+                            </Grid>
+                            <Border Grid.Row="1"
+                                    Height="3"
+                                    Background="Gold"
+                                    Margin="2,2,2,0" />
+                            <Grid Grid.Row="2"
+                                  ColumnDefinitions="*,Auto">
+                                <TextBlock Text="当前值"
+                                           FontSize="12"
+                                           Opacity="0.7" />
+                                <TextBlock Grid.Column="1"
+                                           x:Name="Series5ValueTextBlock"
+                                           Text="{Binding Series5.ValueText}"
+                                           FontSize="12"
+                                           Foreground="#1C2BE0"
+                                           FontWeight="SemiBold" />
+                            </Grid>
+                        </Grid>
+                    </Border>
+
+                    <Border x:Name="Series6CardBorder"
+                            Background="{Binding Series6.BackgroundBrush}"
+                            BorderBrush="{Binding Series6.BorderBrush}"
+                            BorderThickness="{Binding Series6.BorderThickness}"
+                            Opacity="{Binding Series6.Opacity}"
+                            Padding="8"
+                            PointerPressed="VariableCard_PointerPressed">
+                        <Grid RowDefinitions="Auto,Auto,Auto"
+                              RowSpacing="6">
+                            <Grid ColumnDefinitions="Auto,*,Auto,Auto"
+                                  ColumnSpacing="8">
+                                <Border Width="14"
+                                        Height="14"
+                                        CornerRadius="7"
+                                        Background="Teal"
+                                        VerticalAlignment="Center" />
+                                <TextBox Grid.Column="1"
+                                         x:Name="Series6NameTextBox"
+                                         Text="{Binding Series6.Name, Mode=TwoWay}"
+                                         FontSize="12"
+                                         FontWeight="Bold"
+                                         LostFocus="VariableNameEditor_LostFocus" />
+                                <CheckBox Grid.Column="2"
+                                          x:Name="Series6CheckBox"
+                                          Content="显示"
+                                          IsChecked="{Binding Series6.IsVisible, Mode=TwoWay}"
+                                          Checked="SeriesVisibilityChanged"
+                                          Unchecked="SeriesVisibilityChanged" />
+                                <ComboBox Grid.Column="3"
+                                          x:Name="Series6AxisGroupComboBox"
+                                          Width="70"
+                                          SelectionChanged="AxisGroupComboBox_SelectionChanged" />
+                            </Grid>
+                            <Border Grid.Row="1"
+                                    Height="3"
+                                    Background="Teal"
+                                    Margin="2,2,2,0" />
+                            <Grid Grid.Row="2"
+                                  ColumnDefinitions="*,Auto">
+                                <TextBlock Text="当前值"
+                                           FontSize="12"
+                                           Opacity="0.7" />
+                                <TextBlock Grid.Column="1"
+                                           x:Name="Series6ValueTextBlock"
+                                           Text="{Binding Series6.ValueText}"
+                                           FontSize="12"
+                                           Foreground="#1C2BE0"
+                                           FontWeight="SemiBold" />
+                            </Grid>
+                        </Grid>
+                    </Border>
+
+                    <Border x:Name="Series7CardBorder"
+                            Background="{Binding Series7.BackgroundBrush}"
+                            BorderBrush="{Binding Series7.BorderBrush}"
+                            BorderThickness="{Binding Series7.BorderThickness}"
+                            Opacity="{Binding Series7.Opacity}"
+                            Padding="8"
+                            PointerPressed="VariableCard_PointerPressed">
+                        <Grid RowDefinitions="Auto,Auto,Auto"
+                              RowSpacing="6">
+                            <Grid ColumnDefinitions="Auto,*,Auto,Auto"
+                                  ColumnSpacing="8">
+                                <Border Width="14"
+                                        Height="14"
+                                        CornerRadius="7"
+                                        Background="IndianRed"
+                                        VerticalAlignment="Center" />
+                                <TextBox Grid.Column="1"
+                                         x:Name="Series7NameTextBox"
+                                         Text="{Binding Series7.Name, Mode=TwoWay}"
+                                         FontSize="12"
+                                         FontWeight="Bold"
+                                         LostFocus="VariableNameEditor_LostFocus" />
+                                <CheckBox Grid.Column="2"
+                                          x:Name="Series7CheckBox"
+                                          Content="显示"
+                                          IsChecked="{Binding Series7.IsVisible, Mode=TwoWay}"
+                                          Checked="SeriesVisibilityChanged"
+                                          Unchecked="SeriesVisibilityChanged" />
+                                <ComboBox Grid.Column="3"
+                                          x:Name="Series7AxisGroupComboBox"
+                                          Width="70"
+                                          SelectionChanged="AxisGroupComboBox_SelectionChanged" />
+                            </Grid>
+                            <Border Grid.Row="1"
+                                    Height="3"
+                                    Background="IndianRed"
+                                    Margin="2,2,2,0" />
+                            <Grid Grid.Row="2"
+                                  ColumnDefinitions="*,Auto">
+                                <TextBlock Text="当前值"
+                                           FontSize="12"
+                                           Opacity="0.7" />
+                                <TextBlock Grid.Column="1"
+                                           x:Name="Series7ValueTextBlock"
+                                           Text="{Binding Series7.ValueText}"
+                                           FontSize="12"
+                                           Foreground="#1C2BE0"
+                                           FontWeight="SemiBold" />
+                            </Grid>
+                        </Grid>
+                    </Border>
+
+                    <Border x:Name="Series8CardBorder"
+                            Background="{Binding Series8.BackgroundBrush}"
+                            BorderBrush="{Binding Series8.BorderBrush}"
+                            BorderThickness="{Binding Series8.BorderThickness}"
+                            Opacity="{Binding Series8.Opacity}"
+                            Padding="8"
+                            PointerPressed="VariableCard_PointerPressed">
+                        <Grid RowDefinitions="Auto,Auto,Auto"
+                              RowSpacing="6">
+                            <Grid ColumnDefinitions="Auto,*,Auto,Auto"
+                                  ColumnSpacing="8">
+                                <Border Width="14"
+                                        Height="14"
+                                        CornerRadius="7"
+                                        Background="MediumPurple"
+                                        VerticalAlignment="Center" />
+                                <TextBox Grid.Column="1"
+                                         x:Name="Series8NameTextBox"
+                                         Text="{Binding Series8.Name, Mode=TwoWay}"
+                                         FontSize="12"
+                                         FontWeight="Bold"
+                                         LostFocus="VariableNameEditor_LostFocus" />
+                                <CheckBox Grid.Column="2"
+                                          x:Name="Series8CheckBox"
+                                          Content="显示"
+                                          IsChecked="{Binding Series8.IsVisible, Mode=TwoWay}"
+                                          Checked="SeriesVisibilityChanged"
+                                          Unchecked="SeriesVisibilityChanged" />
+                                <ComboBox Grid.Column="3"
+                                          x:Name="Series8AxisGroupComboBox"
+                                          Width="70"
+                                          SelectionChanged="AxisGroupComboBox_SelectionChanged" />
+                            </Grid>
+                            <Border Grid.Row="1"
+                                    Height="3"
+                                    Background="MediumPurple"
+                                    Margin="2,2,2,0" />
+                            <Grid Grid.Row="2"
+                                  ColumnDefinitions="*,Auto">
+                                <TextBlock Text="当前值"
+                                           FontSize="12"
+                                           Opacity="0.7" />
+                                <TextBlock Grid.Column="1"
+                                           x:Name="Series8ValueTextBlock"
+                                           Text="{Binding Series8.ValueText}"
+                                           FontSize="12"
+                                           Foreground="#1C2BE0"
+                                           FontWeight="SemiBold" />
+                            </Grid>
+                        </Grid>
+                    </Border>
+                </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+
+    </Grid>
+
+</Window>
